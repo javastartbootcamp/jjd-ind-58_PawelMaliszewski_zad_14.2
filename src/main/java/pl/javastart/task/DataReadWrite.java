@@ -4,24 +4,29 @@ import java.io.*;
 import java.util.Scanner;
 
 public class DataReadWrite {
-    private static final Scanner sc = new Scanner(System.in);
+    private static final int CLOSE_PROGRAM = 0;
+    private static final int ADD_TO_THE_QUEUE = 1;
+    private static final int GET_OUT_OF_THE_QUEUE = 2;
+    private final Scanner sc = new Scanner(System.in);
+    private final MotQueue motQueue = new MotQueue();
 
-    public static void motApp() throws IOException {
+    public void motApp() throws IOException {
         readFile();
+        clearTheFile();
         int option = -1;
         do {
             printOptions();
             option = sc.nextInt();
             sc.nextLine();
-            if (option == 0) {
-                if (MotQueue.queueSize() == 0) {
+            if (option == CLOSE_PROGRAM) {
+                if (motQueue.isEmpty()) {
                     return;
                 } else {
                     saveQueueToTheFile();
                 }
-            } else if (option == 1) {
-                enterVehicleDetailsAndAddToTheQueue();
-            } else if (option == 2) {
+            } else if (option == ADD_TO_THE_QUEUE) {
+                motQueue.addVehicleToTheQueue(createVehicle());
+            } else if (option == GET_OUT_OF_THE_QUEUE) {
                 getVehicleOutOfTheQueueAndPrint();
             } else {
                 System.err.println("Błędny wybór spróbuj jeszcze raz");
@@ -29,7 +34,13 @@ public class DataReadWrite {
         } while (option != 0);
     }
 
-    private static void enterVehicleDetailsAndAddToTheQueue() {
+    private void clearTheFile() throws IOException {
+        var fileWriter = new BufferedWriter(new FileWriter(fileName));
+        fileWriter.write("");
+        fileWriter.close();
+    }
+
+    private Vehicle createVehicle() {
         System.out.println("Podaj typ pojazdu");
         String type = sc.nextLine();
         System.out.println("Podaj markę");
@@ -43,32 +54,30 @@ public class DataReadWrite {
         sc.nextLine();
         System.out.println("Podaj numer nadwozia VIN");
         String vin = sc.nextLine();
-        MotQueue.addVehicleToQueue(type, make, model, year, mileage, vin);
+        return new Vehicle(type, make, model, year, mileage, vin);
     }
 
-    private static final String fileName = "src\\main\\java\\pl\\javastart\\task\\VehicleQueue.csv";
+    private final String fileName = "src\\main\\java\\pl\\javastart\\task\\VehicleQueue.csv";
 
-    private static void readFile() throws IOException {
+    private void readFile() throws IOException {
         try (Scanner sc = new Scanner(new File(fileName))
         ) {
             if (sc.hasNextLine()) {
                 while (sc.hasNextLine()) {
                     String text = sc.nextLine();
                     String[] split = text.split(",");
-                    MotQueue.addVehicleToQueue(split[0], split[1], split[2], Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5]);
+                    Vehicle vehicle = new Vehicle(split[0], split[1], split[2], Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5]);
+                    motQueue.addVehicleToTheQueue(vehicle);
                 }
-                var fileWriter = new BufferedWriter(new FileWriter(fileName));
-                fileWriter.write("");
-                fileWriter.close();
             }
         }
     }
 
-    private static void saveQueueToTheFile() throws IOException {
+    private void saveQueueToTheFile() throws IOException {
         var fileWriter = new BufferedWriter(new FileWriter(fileName));
         Vehicle vehicle = null;
         do {
-            vehicle = MotQueue.getVehicleFromTheQueue();
+            vehicle = motQueue.getVehicleFromTheQueue();
             if (vehicle != null) {
                 fileWriter.write(vehicle.toString());
                 fileWriter.newLine();
@@ -77,21 +86,19 @@ public class DataReadWrite {
         } while (vehicle != null);
     }
 
-    public static void getVehicleOutOfTheQueueAndPrint() {
-        if (MotQueue.queueSize() > 0) {
-            Vehicle vehicle = MotQueue.getVehicleFromTheQueue();
+    public void getVehicleOutOfTheQueueAndPrint() {
+        if (!motQueue.isEmpty()) {
+            Vehicle vehicle = motQueue.getVehicleFromTheQueue();
             System.out.println(vehicle);
         } else {
             System.out.println("Kolejka pusta");
         }
     }
 
-    private static void printOptions() {
-        System.out.println("""
-                Wybierz opcję:
-                0 -> zakończ program
-                1 -> dodaj pojazd do kolejki
-                2 -> pobierz pojazd z kolejki
-                """);
+    private void printOptions() {
+        System.out.print("Wybierz opcję:\n"
+                         + CLOSE_PROGRAM + " -> zakończ program\n"
+                         + ADD_TO_THE_QUEUE + " -> dodaj pojazd do kolejki\n"
+                         + GET_OUT_OF_THE_QUEUE + " -> pobierz pojazd z kolejki\n");
     }
 }

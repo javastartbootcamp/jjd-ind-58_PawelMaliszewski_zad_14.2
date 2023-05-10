@@ -1,7 +1,5 @@
 package pl.javastart.task;
 
-import java.util.Objects;
-
 public class Vehicle {
     private final String type;
     private final String make;

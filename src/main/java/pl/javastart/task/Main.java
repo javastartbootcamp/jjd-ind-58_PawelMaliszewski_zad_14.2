@@ -6,7 +6,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        DataReadWrite.motApp();
+        DataReadWrite dataReadWrite = new DataReadWrite();
+        dataReadWrite.motApp();
 
     }
 }

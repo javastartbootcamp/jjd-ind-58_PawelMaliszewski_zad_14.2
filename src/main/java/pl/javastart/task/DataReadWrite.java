@@ -12,7 +12,6 @@ public class DataReadWrite {
 
     public void motApp() throws IOException {
         readFile();
-        clearTheFile();
         int option = -1;
         do {
             printOptions();
@@ -25,19 +24,25 @@ public class DataReadWrite {
                     saveQueueToTheFile();
                 }
             } else if (option == ADD_TO_THE_QUEUE) {
-                motQueue.addVehicleToTheQueue(createVehicle());
+                Vehicle vehicle = createVehicle();
+                motQueue.addVehicleToTheQueue(vehicle);
+                addVehicleToTheFile(vehicle);
             } else if (option == GET_OUT_OF_THE_QUEUE) {
                 getVehicleOutOfTheQueueAndPrint();
+                saveQueueToTheFile();
             } else {
                 System.err.println("Błędny wybór spróbuj jeszcze raz");
             }
         } while (option != 0);
     }
 
-    private void clearTheFile() throws IOException {
-        var fileWriter = new BufferedWriter(new FileWriter(fileName));
-        fileWriter.write("");
-        fileWriter.close();
+    private void addVehicleToTheFile(Vehicle vehicle) throws IOException {
+        var fileWriter = new BufferedWriter(new FileWriter(fileName, true));
+        if (vehicle != null) {
+            fileWriter.write(vehicle.toString());
+            fileWriter.newLine();
+            fileWriter.flush();
+        }
     }
 
     private Vehicle createVehicle() {
@@ -57,7 +62,7 @@ public class DataReadWrite {
         return new Vehicle(type, make, model, year, mileage, vin);
     }
 
-    private final String fileName = "src\\main\\java\\pl\\javastart\\task\\VehicleQueue.csv";
+    private final String fileName = "VehicleQueue.csv";
 
     private void readFile() throws IOException {
         try (Scanner sc = new Scanner(new File(fileName))
@@ -75,15 +80,13 @@ public class DataReadWrite {
 
     private void saveQueueToTheFile() throws IOException {
         var fileWriter = new BufferedWriter(new FileWriter(fileName));
-        Vehicle vehicle = null;
-        do {
-            vehicle = motQueue.getVehicleFromTheQueue();
+        for (Vehicle vehicle : motQueue.getQueue()) {
             if (vehicle != null) {
                 fileWriter.write(vehicle.toString());
                 fileWriter.newLine();
+                fileWriter.flush();
             }
-            fileWriter.flush();
-        } while (vehicle != null);
+        }
     }
 
     public void getVehicleOutOfTheQueueAndPrint() {

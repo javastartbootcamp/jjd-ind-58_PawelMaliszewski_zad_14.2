@@ -20,4 +20,8 @@ public class MotQueue {
     public boolean isEmpty() {
         return vehicles.isEmpty();
     }
+
+    public Queue<Vehicle> getQueue() {
+        return vehicles;
+    }
 }
